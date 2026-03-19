@@ -1,0 +1,40 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.venv/
+venv/
+*.egg-info/
+dist/
+build/
+
+# Données sensibles (CDRs réels)
+data/real/
+data/raw/
+*.dat
+*.gz
+*.csv.bak
+
+# Credentials
+*.key
+*.pem
+secrets.yml
+config/secrets/
+.env.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Logs
+*.log
+logs/
