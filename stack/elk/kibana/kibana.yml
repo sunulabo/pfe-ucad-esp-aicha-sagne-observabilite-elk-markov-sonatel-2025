@@ -1,0 +1,26 @@
+# ============================================================
+#  kibana.yml — UADB Lab Config
+# ============================================================
+
+server.name: kibana-uadb
+server.host: "0.0.0.0"
+server.port: 5601
+
+elasticsearch.hosts: ["http://elasticsearch:9200"]
+elasticsearch.username: "elastic"
+
+# Machine Learning
+#xpack.ml.enabled: true
+
+#xpack.graph.enabled: true
+
+# Monitoring
+monitoring.ui.enabled: true
+monitoring.ui.container.elasticsearch.enabled: true
+
+# Telemetry désactivé (lab local)
+telemetry.enabled: false
+telemetry.optIn: false
+
+# UI
+i18n.locale: "fr"

@@ -1,0 +1,9 @@
+http.host: 0.0.0.0
+http.port: 9600
+log.level: info
+pipeline.batch.size: 125
+pipeline.workers: 2
+xpack.monitoring.elasticsearch.hosts: ${xpack.monitoring.elasticsearch.hosts}
+xpack.monitoring.elasticsearch.password: ${xpack.monitoring.elasticsearch.password}
+xpack.monitoring.elasticsearch.username: ${xpack.monitoring.elasticsearch.username}
+xpack.monitoring.enabled: ${xpack.monitoring.enabled}

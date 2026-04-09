@@ -1,82 +1,127 @@
-version: "3.8"
+networks:
+  elk-net:
+    driver: bridge
+
+volumes:
+  esdata01:
+    driver: local
+  kibanadata:
+    driver: local
 
 services:
 
   elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:9.3.0
-    container_name: es_pfe
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    container_name: elasticsearch
+    hostname: elasticsearch
     environment:
+      - node.name=elasticsearch
+      - cluster.name=${CLUSTER_NAME}
       - discovery.type=single-node
       - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
-      - ES_JAVA_OPTS=-Xms1g -Xmx1g
-    ports:
-      - "9200:9200"
+      - xpack.security.http.ssl.enabled=false
+      - xpack.security.transport.ssl.enabled=false
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - xpack.ml.enabled=true
+      - node.roles=master,data,ingest,ml,remote_cluster_client
+      - bootstrap.memory_lock=true
+      - ES_JAVA_OPTS=${ES_JAVA_OPTS}
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
     volumes:
-      - es_data:/usr/share/elasticsearch/data
+      - esdata01:/usr/share/elasticsearch/data
+      - ./elasticsearch/elasticsearch.yml:/usr/share/elasticsearch/config/elasticsearch.yml:ro
+    ports:
+      - "${ES_PORT}:9200"
+      - "9300:9300"
     networks:
-      - elk_net
+      - elk-net
+    restart: unless-stopped
     healthcheck:
-      test: ["CMD-SHELL", "curl -su elastic:${ELASTIC_PASSWORD:-changeme} http://localhost:9200/_cluster/health | grep -q 'green\\|yellow'"]
+      test: >
+        curl -s -u elastic:${ELASTIC_PASSWORD}
+        http://localhost:9200/_cluster/health
+        | grep -qE '"status":"(green|yellow)"'
       interval: 30s
-      timeout: 10s
-      retries: 5
+      timeout: 15s
+      retries: 10
+      start_period: 60s
 
   kibana:
-    image: docker.elastic.co/kibana/kibana:9.3.0
-    container_name: kibana_pfe
+    image: docker.elastic.co/kibana/kibana:${ELASTIC_VERSION}
+    container_name: kibana
+    hostname: kibana
     environment:
+      - SERVERNAME=kibana-uadb
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
       - ELASTICSEARCH_USERNAME=kibana_system
-      - ELASTICSEARCH_PASSWORD=${KIBANA_SYSTEM_PASSWORD:-changeme2}
+      - ELASTICSEARCH_PASSWORD=${KIBANA_PASSWORD}
+      - XPACK_ENCRYPTEDSAVEDOBJECTS_ENCRYPTIONKEY=uadb2025kibanaencryptionkey32chars
+      - MONITORING_ENABLED=true
+      - ELASTICSEARCH_SERVICEACCOUNTTOKEN=
+    volumes:
+      - kibanadata:/usr/share/kibana/data
+      - ./kibana/kibana.yml:/usr/share/kibana/config/kibana.yml:ro
     ports:
-      - "5601:5601"
+      - "${KIBANA_PORT}:5601"
     depends_on:
       elasticsearch:
         condition: service_healthy
     networks:
-      - elk_net
+      - elk-net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -s http://localhost:5601/api/status | grep -q 'available'"]
+      interval: 30s
+      timeout: 15s
+      retries: 10
+      start_period: 90s
 
   logstash:
-    image: docker.elastic.co/logstash/logstash:9.3.0
-    container_name: logstash_pfe
-    volumes:
-      - ../elk/logstash/logstash.conf:/usr/share/logstash/pipeline/logstash.conf:ro
+    image: docker.elastic.co/logstash/logstash:${ELASTIC_VERSION}
+    container_name: logstash
+    hostname: logstash
     environment:
-      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD:-changeme}
+      - LS_JAVA_OPTS=${LS_JAVA_OPTS}
+      - ELASTIC_USER=elastic
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - ELASTIC_HOSTS=http://elasticsearch:9200
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
+      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.password=${ELASTIC_PASSWORD}
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+      - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:rw
+      - ./data/sample-logs:/data/sample-logs:ro
     ports:
-      - "5001:5001/tcp"
+      - "${LOGSTASH_TCP_PORT}:5000/tcp"
+      - "${LOGSTASH_BEATS_PORT}:5044"
+      - "${LOGSTASH_API_PORT}:9600"
     depends_on:
       elasticsearch:
         condition: service_healthy
     networks:
-      - elk_net
+      - elk-net
+    restart: unless-stopped
 
-  ollama:
-    image: ollama/ollama:latest
-    container_name: ollama_pfe
-    ports:
-      - "11434:11434"
+  setup:
+    image: docker.elastic.co/elasticsearch/elasticsearch:${ELASTIC_VERSION}
+    container_name: elk-setup
     volumes:
-      - ollama_data:/root/.ollama
+      - ./setup-scripts/setup.sh:/setup.sh:ro
+    environment:
+      - ELASTIC_PASSWORD=${ELASTIC_PASSWORD}
+      - KIBANA_PASSWORD=${KIBANA_PASSWORD}
+    command: bash /setup.sh
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
     networks:
-      - elk_net
-
-  chromadb:
-    image: chromadb/chroma:latest
-    container_name: chroma_pfe
-    ports:
-      - "8000:8000"
-    volumes:
-      - chroma_data:/chroma/chroma
-    networks:
-      - elk_net
-
-volumes:
-  es_data:
-  ollama_data:
-  chroma_data:
-
-networks:
-  elk_net:
-    driver: bridge
+      - elk-net
+    restart: "no"

@@ -1,0 +1,24 @@
+# ============================================================
+#  elasticsearch.yml — UADB Lab Config
+# ============================================================
+
+cluster.name: uadb-bigdata-lab
+node.name: elasticsearch
+
+# ML activé explicitement
+#xpack.ml.enabled: true
+
+# Sécurité
+xpack.security.enabled: true
+xpack.security.http.ssl.enabled: false
+xpack.security.transport.ssl.enabled: false
+
+# Monitoring
+xpack.monitoring.collection.enabled: true
+
+# Logs
+path.logs: /usr/share/elasticsearch/logs
+
+# Réseau
+network.host: 0.0.0.0
+http.port: 9200
