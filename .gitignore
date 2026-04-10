@@ -38,3 +38,8 @@ Thumbs.db
 # Logs
 *.log
 logs/
+
+#markov
+src/markov/db_config.json
+src/markov/elastic_config.json
+*.jar

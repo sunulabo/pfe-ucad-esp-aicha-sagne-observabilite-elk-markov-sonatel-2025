@@ -1,0 +1,52 @@
+{
+  "nodes": {
+    "toProcessingCollect": "S_In",
+    "toArchive": "S_In",
+    "toProcessingSGW": "S_In",
+    "toProcessingPGW": "S_In",
+    "toArchivePGW": "S_In",
+    "toUnDecodable": "S_In",
+
+    
+    "toProcessing": "S_Proc",
+    "toDupUDRPGW": "S_Proc",
+    "E2_DUP_UDR": " S_Proc",
+    "toMZTagEnc-toProcessing": "S_Proc",
+    "toRouting": "S_Proc",
+    "toLookup": "S_Proc",
+    "singleRecord" : "S_Proc",
+
+
+
+
+    "toOSN_DWH_NM": "S_Out_OK",
+    "toOSN_DWH_NM4G": "S_Out_OK",
+    "DWH_NM": "S_Out_OK",
+    "DWH_NM_CLONE": "S_Out_OK",
+    "toOSN_INTERCO_PGW": "S_Out_OK",
+    "toMVNONM": "S_Out_OK",
+    "to_LMS": "S_Out_OK",
+    "to_ICTCDREN": "S_Out_OK",
+    "to_ICTCDRSO": "S_Out_OK",
+    "toECS": "S_Out_OK",
+    "toOSN_MVNO_NM4G": "S_Out_OK",
+    "toOSN_NESSICO4G": "S_Out_OK",
+    "toOSN_NESSICO5G": "S_Out_OK",
+    "toOSN_NESSICO": "S_Out_OK",
+    "toOSN_MVNO_NM": "S_Out_OK",
+    "toOSN_DWH_NM5G": "S_Out_OK",
+    "toOSN_DWH_RM4G": "S_Out_OK",
+    "toOGB_DWH_RI": "S_Out_OK",
+    "toOSN_DWH_RON" : "S_Out_OK",
+
+    "REJECT_NO_APPLI": "S_Reject",
+    "ELIMINE_NO_APPLI": "S_Reject",
+    "to_ELIMINE_INEFF": "S_Reject",
+    "to_ELIMINE_MISSING": "S_Reject",
+    "to_ELIMINE_INVALID": "S_Reject"
+
+    
+
+
+  }
+}
